@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noimageindex">
+<meta name="theme-color" content="#3b2d5c">
+<title>Bienvenida, Isa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Fredoka:wght@500;600&family=Quicksand:wght@400;500;600&display=swap">
+<style>
+/* Concepto: cuarto de bebé convertido en pasillo al atardecer rosado; globos, banderines, estrellas y una luna al final. La interfaz es mínima y flota sobre la escena 3D. Un solo aspecto, a propósito. */
+:root {
+  --noche: #3b2d5c;
+  --rubor: #ffc9da;
+  --durazno: #ffe0d1;
+  --crema: #fff8fa;
+  --oro: #f1cf9c;
+  --rosa: #f490b3;
+  --tinta: #5a3a5e;
+  --rosa-tinta: #c2477a;
+  --f-script: "Dancing Script", "Snell Roundhand", "Apple Chancery", cursive;
+  --f-texto: "Quicksand", "Avenir Next", "Segoe UI", sans-serif;
+  --f-redonda: "Fredoka", "Quicksand", "Avenir Next", sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body {
+  margin: 0; background: var(--noche); color: var(--crema); font-family: var(--f-texto);
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+#escena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#vineta {
+  position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  background: radial-gradient(130% 120% at 50% 45%, transparent 55%, rgba(120, 60, 110, .18) 80%, rgba(59, 45, 92, .45) 100%);
+}
+:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+
+/* Capas a pantalla completa */
+.capa { position: fixed; inset: 0; display: grid; place-items: center; transition: opacity .9s ease; }
+.capa.oculta { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .9s ease, visibility 0s linear .9s; }
+
+/* Portada */
+#inicio {
+  z-index: 20; text-align: center;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+  background: radial-gradient(120% 90% at 50% 70%, rgba(255, 200, 222, .2), rgba(59, 45, 92, .6) 74%);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.inicio-contenido { display: flex; flex-direction: column; align-items: center; gap: clamp(6px, 2vh, 14px); max-width: 34rem; }
+.etiqueta { font-family: var(--f-redonda); font-weight: 500; font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--durazno); text-wrap: balance; }
+#inicio h1 {
+  margin: 0; font-family: var(--f-script); font-weight: 700; line-height: 1.05;
+  font-size: clamp(3rem, 14vh, 5.2rem); color: var(--crema); text-wrap: balance;
+  text-shadow: 0 0 28px rgba(255, 160, 200, .65), 0 2px 10px rgba(59, 45, 92, .4);
+}
+.sub { margin: 0; font-weight: 500; font-size: clamp(1rem, 4.2vh, 1.15rem); line-height: 1.5; color: var(--rubor); text-wrap: balance; }
+#comenzar {
+  margin-top: clamp(4px, 2vh, 12px); display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--f-redonda); font-weight: 600; font-size: .85rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--tinta); background: var(--crema); border: 0; border-radius: 999px; padding: 14px 30px; cursor: pointer;
+  box-shadow: 0 0 0 6px rgba(255, 248, 250, .16), 0 10px 30px rgba(194, 71, 122, .35);
+  transition: transform .2s ease, opacity .3s ease;
+}
+#comenzar svg { width: 16px; height: 16px; fill: var(--rosa); }
+#comenzar:disabled { opacity: .65; cursor: progress; }
+#comenzar:not(:disabled):active { transform: scale(.97); }
+.volumen { font-family: var(--f-redonda); font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(255, 248, 250, .72); }
+
+/* Indicaciones durante el paseo */
+#hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; transition: opacity .6s ease; }
+#hud.oculta { opacity: 0; }
+#hud.oculta * { pointer-events: none !important; }
+#puntos { position: absolute; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; gap: 10px; }
+#puntos svg { width: 15px; height: 15px; fill: rgba(255, 248, 250, .55); stroke: rgba(194, 71, 122, .6); stroke-width: 1.6; stroke-linejoin: round; transition: fill .5s, stroke .5s, transform .5s; filter: drop-shadow(0 1px 3px rgba(90, 58, 94, .3)); }
+#puntos svg.visto { fill: #f7b6cd; stroke: #c2477a; }
+#puntos svg.activo { fill: #c2477a; stroke: #fff8fa; transform: scale(1.35); }
+.boton-redondo {
+  position: absolute; width: 42px; height: 42px; padding: 0; border-radius: 50%; cursor: pointer; pointer-events: auto;
+  display: grid; place-items: center; color: var(--crema);
+  border: 1px solid rgba(255, 248, 250, .4); background: rgba(59, 45, 92, .3);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: opacity .4s ease;
+}
+.boton-redondo svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#atras { left: calc(14px + env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+#atras:disabled { opacity: 0; pointer-events: none; }
+#sonido { position: fixed; z-index: 35; right: calc(14px + env(safe-area-inset-right, 0px)); top: calc(12px + env(safe-area-inset-top, 0px)); }
+#sonido .tachado { display: none; }
+#sonido.silencio .tachado { display: inline; }
+
+/* Nota de cada parada */
+#nota {
+  position: fixed; z-index: 12; pointer-events: none; box-sizing: border-box; overflow: hidden; color-scheme: light;
+  color: var(--tinta); background: linear-gradient(170deg, rgba(255, 250, 252, .93), rgba(255, 236, 244, .9));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-radius: 22px; padding: 16px 20px 14px;
+  box-shadow: 0 18px 50px rgba(59, 45, 92, .35), 0 0 0 1px rgba(241, 207, 156, .55);
+  display: flex; flex-direction: column; gap: 6px;
+  opacity: 0; translate: 0 16px; transition: opacity .7s ease, translate .9s cubic-bezier(.2, .8, .2, 1);
+}
+#nota::before { content: ""; position: absolute; inset: 6px; border: 1px dashed rgba(244, 144, 179, .45); border-radius: 17px; pointer-events: none; }
+#nota.visible { opacity: 1; translate: 0 0; }
+#nota > * { margin: 0; position: relative; }
+.nota-etiqueta { font-family: var(--f-redonda); font-weight: 500; font-size: .66rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rosa); display: flex; align-items: center; gap: 6px; }
+.nota-etiqueta svg { width: 11px; height: 11px; fill: var(--oro); }
+#nota h2 { font-family: var(--f-script); font-weight: 700; font-size: clamp(1.7rem, 7.5vw, 2.3rem); line-height: 1.1; color: var(--rosa-tinta); text-wrap: balance; }
+#nota p.texto { font-size: clamp(.95rem, 4vw, 1.06rem); font-weight: 500; line-height: 1.55; text-wrap: pretty; }
+#nota h2, #nota p.texto { opacity: 0; translate: 0 8px; transition: opacity .8s ease, translate .8s ease; }
+#nota.visible h2 { opacity: 1; translate: 0 0; transition-delay: .25s; }
+#nota.visible p.texto { opacity: 1; translate: 0 0; transition-delay: .6s; }
+.nota-pista {
+  align-self: flex-end; font-family: var(--f-redonda); font-weight: 500; font-size: .64rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--rosa-tinta); opacity: 0; transition: opacity .8s ease;
+}
+#nota.con-pista .nota-pista { opacity: .85; animation: respirar 2.6s ease-in-out infinite; }
+@keyframes respirar { 0%, 100% { opacity: .9; } 50% { opacity: .4; } }
+@media (orientation: portrait) {
+  #nota { left: calc(16px + env(safe-area-inset-left, 0px)); right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 40vh; }
+}
+@media (orientation: landscape) {
+  #nota { right: calc(20px + env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); width: min(38vw, 440px); max-height: calc(100% - 40px); padding: 20px 24px 16px; }
+  #nota h2 { font-size: clamp(1.6rem, 4.4vw, 2.5rem); }
+  #nota p.texto { font-size: clamp(.9rem, 1.7vw, 1.1rem); }
+}
+
+/* Sobre y carta final */
+#carta-capa {
+  z-index: 30;
+  background: radial-gradient(90% 80% at 50% 50%, rgba(255, 214, 230, .22), rgba(59, 45, 92, .58));
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+}
+.sobre {
+  position: absolute; width: min(300px, 64vw); aspect-ratio: 1.55; perspective: 900px;
+  opacity: 0; transform: translateY(16px) scale(.85);
+  transition: opacity .8s ease, transform .8s cubic-bezier(.2, .8, .2, 1);
+}
+#carta-capa.f1 .sobre { opacity: 1; transform: none; }
+#carta-capa.f4 .sobre { opacity: 0; transform: translateY(30px) scale(.9); transition-duration: .7s; }
+.sobre .pieza { position: absolute; inset: 0; border-radius: 6px; }
+.sobre .fondo { z-index: 0; background: #eba3bf; }
+.sobre .hoja {
+  z-index: 2; inset: 7% 7% auto 7%; height: 84%; border-radius: 4px; background-color: var(--crema);
+  background-image: repeating-linear-gradient(transparent 0 13px, rgba(194, 71, 122, .14) 13px 14px);
+  box-shadow: 0 2px 6px rgba(90, 58, 94, .15); transition: transform .9s cubic-bezier(.3, .7, .2, 1);
+}
+#carta-capa.f3 .sobre .hoja { transform: translateY(-58%); }
+.sobre .bolsillo { z-index: 3; background: linear-gradient(160deg, #ffd6e4, #f5b6cc); clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%); }
+.sobre .solapa {
+  z-index: 4; background: linear-gradient(180deg, #fccbdb, #f0adc5); clip-path: polygon(0 0, 100% 0, 50% 56%);
+  transform-origin: 50% 0; transition: transform .8s cubic-bezier(.5, .1, .3, 1), z-index 0s linear .4s;
+}
+#carta-capa.f2 .sobre .solapa { transform: rotateX(180deg); z-index: 1; }
+.sello {
+  position: absolute; z-index: 5; left: 50%; top: 56%; width: 16%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%); display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, #f7a3c0, #cc5a86); box-shadow: 0 2px 6px rgba(120, 40, 70, .35);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.sello svg { width: 54%; height: 54%; fill: #fff0f5; }
+#carta-capa.f2 .sello { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+.carta {
+  position: absolute; overflow: hidden; color-scheme: light; color: var(--tinta);
+  width: min(660px, calc(100% - 32px)); max-height: 780px;
+  height: calc(100% - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  border-radius: 20px; background: linear-gradient(175deg, rgba(255, 251, 252, .97), rgba(255, 238, 245, .95));
+  box-shadow: 0 30px 80px rgba(59, 45, 92, .45), 0 0 0 1px rgba(241, 207, 156, .55);
+  opacity: 0; transform: translateY(18px) scale(.97); pointer-events: none;
+  transition: opacity 1s ease, transform 1s cubic-bezier(.2, .8, .2, 1);
+  -webkit-user-select: text; user-select: text;
+}
+#carta-capa.f4 .carta { opacity: 1; transform: none; pointer-events: auto; }
+.carta::before { content: ""; position: absolute; inset: 7px; border: 1px dashed rgba(244, 144, 179, .5); border-radius: 15px; pointer-events: none; }
+.carta-scroll {
+  height: 100%; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y;
+  display: flex; flex-direction: column; gap: 1em;
+  padding: clamp(24px, 6vh, 42px) clamp(22px, 6vw, 56px) 40px;
+  -webkit-mask-image: linear-gradient(transparent, #000 18px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(transparent, #000 18px, #000 calc(100% - 28px), transparent);
+}
+.carta-scroll > * { margin: 0; opacity: 0; transform: translateY(10px); transition: opacity 1.1s ease, transform 1.1s ease; }
+.carta-scroll > .visible { opacity: 1; transform: none; }
+.carta h2 {
+  font-family: var(--f-script); font-weight: 700; font-size: clamp(2.2rem, 10vw, 3rem); line-height: 1.1;
+  color: var(--rosa-tinta); text-align: center; text-wrap: balance;
+}
+.adorno { align-self: center; width: 132px; height: 16px; flex: none; }
+.carta p { font-size: 1.05rem; line-height: 1.75; font-weight: 500; max-width: 62ch; text-wrap: pretty; }
+.carta p.saludo { font-family: var(--f-script); font-weight: 700; font-size: 1.6rem; line-height: 1.2; color: var(--rosa-tinta); }
+.carta p.cierre {
+  font-family: var(--f-script); font-weight: 700; font-size: clamp(1.7rem, 7.5vw, 2.2rem); line-height: 1.3;
+  color: var(--rosa-tinta); text-align: center; text-wrap: balance; padding-top: .3em;
+}
+.carta p.firma { text-align: center; font-family: var(--f-redonda); font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: var(--rosa); }
+#otra-vez {
+  align-self: center; margin-top: .4em; padding: 10px 20px; border-radius: 999px; cursor: pointer;
+  font-family: var(--f-redonda); font-weight: 500; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--rosa-tinta); background: transparent; border: 1px solid rgba(194, 71, 122, .4);
+}
+
+#velo { position: fixed; inset: 0; z-index: 40; background: var(--crema); opacity: 0; pointer-events: none; transition: opacity .7s ease; }
+#velo.activo { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .25s !important; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="escena" aria-hidden="true"></canvas>
+<div id="vineta"></div>
+
+<div id="hud" class="oculta">
+  <div id="puntos" aria-hidden="true"></div>
+  <button id="atras" class="boton-redondo" type="button" aria-label="Foto anterior" disabled>
+    <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+</div>
+
+<aside id="nota" aria-live="polite">
+  <p class="nota-etiqueta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg><span id="nota-etq"></span></p>
+  <h2 id="nota-titulo"></h2>
+  <p class="texto" id="nota-texto"></p>
+  <p class="nota-pista" id="nota-pista">Toca para seguir</p>
+</aside>
+
+<button id="sonido" class="boton-redondo" type="button" aria-label="Pausar música" hidden>
+  <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path class="tachado" d="M3 3l18 18"/></svg>
+</button>
+
+<section id="inicio" class="capa">
+  <div class="inicio-contenido">
+    <span class="etiqueta">Para Marcela y para Isa · con amor desde Colombia</span>
+    <h1>Bienvenida, Isa</h1>
+    <p class="sub">Te preparé un caminito de luz. Recórrelo conmigo, paso a paso.</p>
+    <button id="comenzar" type="button" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+      <span id="comenzar-texto">Preparando…</span>
+    </button>
+    <span id="volumen" class="volumen">Sube el volumen</span>
+  </div>
+</section>
+
+<section id="carta-capa" class="capa oculta">
+  <div class="sobre" aria-hidden="true">
+    <div class="pieza fondo"></div>
+    <div class="pieza hoja"></div>
+    <div class="pieza bolsillo"></div>
+    <div class="pieza solapa"></div>
+    <span class="sello"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg></span>
+  </div>
+  <article class="carta" aria-labelledby="carta-titulo">
+    <div class="carta-scroll" id="carta-scroll">
+      <h2 id="carta-titulo">Bienvenida a la familia, Isa</h2>
+      <svg class="adorno" viewBox="0 0 132 16" aria-hidden="true">
+        <path d="M2 8h48M82 8h48" stroke="#f1cf9c" stroke-width="1" fill="none"/>
+        <path d="M66 1.5l2.1 4.4 4.8.6-3.5 3.3.9 4.8-4.3-2.4-4.3 2.4.9-4.8-3.5-3.3 4.8-.6z" fill="#f490b3"/>
+      </svg>
+      <p class="saludo">Mi querida Isa:</p>
+      <p>Todavía no te conozco en persona y ya te quiero con todo mi corazón. Desde que supe que habías llegado no he dejado de mirar tus fotos y de sonreír. Eres el regalo más bonito que nos pudo llegar a toda la familia.</p>
+      <p>No te imaginas lo inmensamente feliz que me hace ser tu padrino. Te prometo que siempre voy a estar ahí: para cuidarte, para protegerte, para enseñarte lo que sé y para guiarte con mi vida, en los días felices y también en los difíciles. Nunca vas a estar sola.</p>
+      <p>Hoy nos separa la distancia, pero muy pronto vas a volver a Colombia, y aquí te estamos esperando con los brazos abiertos. Espero con ansias el día en que pueda verte, cargarte y tenerte en mis brazos por primera vez.</p>
+      <p>Tía Marcela: gracias por traer al mundo a esta niña tan hermosa y por regalarme el honor de ser su padrino. Las queremos muchísimo y contamos los días para tenerlas aquí con nosotros.</p>
+      <p class="cierre">Bienvenida a la vida, Isa. Aquí te espera tu padrino.</p>
+      <p class="firma">Con todo mi amor</p>
+      <button id="otra-vez" type="button">Volver a recorrerlo</button>
+    </div>
+  </article>
+</section>
+
+<div id="velo"></div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const FOTOS = ['fotos/01.jpg', 'fotos/02.jpg', 'fotos/03.jpg', 'fotos/04.jpg'];
+const NOTAS = [
+  { titulo: 'Bienvenida al mundo, Isa', texto: 'Llegaste chiquitica, envuelta en tu cobija, y el mundo entero se volvió más bonito. Aunque hoy estés lejos, ya ocupas un lugar enorme en mi corazón.' },
+  { titulo: 'Soy tu padrino', texto: 'No sabes lo inmensamente feliz que me hace ser tu padrino. De todo lo que me ha regalado la vida, este es el título que más orgullo me da.' },
+  { titulo: 'Mi promesa para ti', texto: 'Te voy a cuidar, te voy a proteger y te voy a guiar con mi vida. Siempre vas a tener en mí a alguien que te defienda, te escuche y te acompañe en cada paso.' },
+  { titulo: 'Te espero con los brazos abiertos', texto: 'Cuento los días para que vuelvas a Colombia. Sueño con el momento de verte por primera vez y de tenerte, por fin, en mis brazos.' },
+];
+const N = FOTOS.length;
+const SEP = 6;          // metros entre una foto y la siguiente
+const ANCHO = 3.0;      // media anchura del pasillo
+const ALTO = 3.8;       // altura de las paredes
+const OJO = 1.65;       // altura de la cámara y del centro de las fotos
+const Z_INICIO = 6;
+const zFoto = i => -2 - i * SEP;
+const lado = i => (i % 2 === 0 ? -1 : 1);   // -1 pared izquierda, 1 derecha
+const Z_LUNA = zFoto(N - 1) - 9;
+const Z_FONDO = Z_LUNA - 4;
+const Z_ATRAS = 9;
+const LARGO = Z_ATRAS - Z_FONDO;
+const Z_MEDIO = (Z_ATRAS + Z_FONDO) / 2;
+const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const $ = id => document.getElementById(id);
+const azar = (a, b) => a + Math.random() * (b - a);
+const elegir = lista => lista[Math.floor(Math.random() * lista.length)];
+const lerp = (a, b, k) => a + (b - a) * k;
+const suave = (a, b, x) => { const k = Math.min(Math.max((x - a) / (b - a), 0), 1); return k * k * (3 - 2 * k); };
+const entradaSalida = k => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const salidaRebote = k => 1 + 2.4 * Math.pow(k - 1, 3) + 1.4 * Math.pow(k - 1, 2);
+
+/* ---------- Motor ---------- */
+const canvas = $('escena');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+const ANISO = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2('#eebbd0', 0.024);
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 320);
+camera.rotation.order = 'YXZ';
+
+scene.add(new THREE.HemisphereLight('#fff2f7', '#d99cbb', 2.05));
+const luzCamara = new THREE.PointLight('#ffe0cc', 5.5, 10, 1.6);
+scene.add(luzCamara);
+
+/* ---------- Texturas dibujadas ---------- */
+function texturaCanvas(w, h, dibujar, repetir = false) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  dibujar(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = ANISO;
+  if (repetir) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+function trazoCorazon(g, cx, cy, s) {
+  cy -= 0.07 * s;
+  g.beginPath();
+  g.moveTo(cx, cy - 0.15 * s);
+  g.bezierCurveTo(cx - 0.05 * s, cy - 0.38 * s, cx - 0.5 * s, cy - 0.38 * s, cx - 0.5 * s, cy - 0.08 * s);
+  g.bezierCurveTo(cx - 0.5 * s, cy + 0.18 * s, cx - 0.2 * s, cy + 0.3 * s, cx, cy + 0.45 * s);
+  g.bezierCurveTo(cx + 0.2 * s, cy + 0.3 * s, cx + 0.5 * s, cy + 0.18 * s, cx + 0.5 * s, cy - 0.08 * s);
+  g.bezierCurveTo(cx + 0.5 * s, cy - 0.38 * s, cx + 0.05 * s, cy - 0.38 * s, cx, cy - 0.15 * s);
+  g.closePath();
+}
+
+function trazoEstrella(g, cx, cy, rFuera, rDentro = rFuera * 0.48, puntas = 5) {
+  g.beginPath();
+  for (let k = 0; k < puntas * 2; k++) {
+    const r = k % 2 ? rDentro : rFuera;
+    const a = -Math.PI / 2 + k * Math.PI / puntas;
+    g.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+  }
+  g.closePath();
+}
+
+const texBrillo = texturaCanvas(128, 128, (g, w) => {
+  const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  r.addColorStop(0, 'rgba(255,255,255,1)');
+  r.addColorStop(0.25, 'rgba(255,255,255,.55)');
+  r.addColorStop(0.6, 'rgba(255,255,255,.14)');
+  r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r;
+  g.fillRect(0, 0, w, w);
+});
+
+// Corazones y estrellitas que flotan junto a cada foto
+function texturaParticula(forma, centro, borde) {
+  return texturaCanvas(256, 256, (g, w) => {
+    const s = w * 0.62, cx = w / 2, cy = w / 2;
+    g.shadowColor = borde;
+    g.shadowBlur = 30;
+    const r = g.createRadialGradient(cx - s * 0.16, cy - s * 0.2, s * 0.02, cx, cy, s * 0.62);
+    r.addColorStop(0, centro);
+    r.addColorStop(1, borde);
+    g.fillStyle = r;
+    g.strokeStyle = r;
+    g.lineJoin = 'round';
+    g.lineWidth = s * 0.08;
+    if (forma === 'corazon') trazoCorazon(g, cx, cy, s);
+    else trazoEstrella(g, cx, cy, s * 0.5);
+    g.fill();
+    if (forma !== 'corazon') g.stroke();
+    g.shadowBlur = 0;
+    g.fillStyle = 'rgba(255,255,255,.7)';
+    g.beginPath();
+    g.ellipse(cx - s * 0.16, cy - s * 0.16, s * 0.08, s * 0.045, -0.6, 0, Math.PI * 2);
+    g.fill();
+  });
+}
+const texParticulas = [
+  ['corazon', '#ffe3ec', '#f58fb3'], ['estrella', '#fff8e6', '#f6cf8e'], ['corazon', '#fff0f5', '#f7b2c8'],
+  ['estrella', '#fff0f6', '#f4a3c4'], ['corazon', '#f6ecff', '#d2adf2'], ['estrella', '#ffffff', '#ffc4d8'],
+].map(([f, c, b]) => texturaParticula(f, c, b));
+
+const texPared = texturaCanvas(512, 324, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0, '#ffe7f0');
+  gr.addColorStop(1, '#fbd2e0');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, w, h);
+  const yZ = h * (1 - 1 / ALTO);
+  // Estrellitas y puntos pintados en la pared, como papel de colgadura de cuarto de bebé
+  for (let fila = 0; fila < 5; fila++) {
+    for (let col = 0; col < 6; col++) {
+      const x = (col + (fila % 2 ? 0.5 : 0)) * w / 6 + w / 12;
+      const y = 22 + fila * (yZ - 40) / 4.6;
+      if ((fila + col) % 2) {
+        g.fillStyle = 'rgba(255,255,255,.75)';
+        trazoEstrella(g, x, y, 9);
+        g.fill();
+      } else {
+        g.fillStyle = 'rgba(244,144,179,.28)';
+        g.beginPath();
+        g.arc(x, y, 4.5, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+  }
+  const gz = g.createLinearGradient(0, yZ, 0, h);
+  gz.addColorStop(0, '#f7c2d5');
+  gz.addColorStop(1, '#eeaac4');
+  g.fillStyle = gz;
+  g.fillRect(0, yZ, w, h - yZ);
+  g.fillStyle = '#fff3e4';
+  g.fillRect(0, yZ - 5, w, 5);
+  g.fillStyle = 'rgba(255,255,255,.6)';
+  for (let k = 0; k < 16; k++) { g.beginPath(); g.arc(k * w / 16 + w / 32, yZ - 2.5, 3.2, 0, Math.PI * 2); g.fill(); }
+  g.strokeStyle = 'rgba(255,244,248,.6)';
+  g.lineWidth = 2;
+  for (let k = 0; k < 3; k++) {
+    g.beginPath();
+    g.roundRect(k * w / 3 + 14, yZ + 12, w / 3 - 28, h - yZ - 24, 10);
+    g.stroke();
+  }
+}, true);
+
+const texSuelo = texturaCanvas(512, 512, (g, w) => {
+  g.fillStyle = '#f3d6e2';
+  g.fillRect(0, 0, w, w);
+  const t = w / 2;
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    const gr = g.createRadialGradient(i * t + t * 0.3, j * t + t * 0.3, 0, i * t + t / 2, j * t + t / 2, t * 0.8);
+    gr.addColorStop(0, (i + j) % 2 ? '#fff4f8' : '#fbe3ec');
+    gr.addColorStop(1, (i + j) % 2 ? '#f8e2ea' : '#f2cfdd');
+    g.fillStyle = gr;
+    g.fillRect(i * t + 2, j * t + 2, t - 4, t - 4);
+  }
+}, true);
+texSuelo.repeat.set(2, LARGO / 3);
+
+const texAlfombra = texturaCanvas(256, 512, (g, w, h) => {
+  g.fillStyle = '#fff1f5';
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = '#f6a9c4';
+  g.fillRect(0, 0, 22, h);
+  g.fillRect(w - 22, 0, 22, h);
+  g.fillStyle = '#ffffff';
+  for (let k = 0; k < 16; k++) { g.beginPath(); g.arc(11, k * h / 16 + h / 32, 4, 0, Math.PI * 2); g.arc(w - 11, k * h / 16 + h / 32, 4, 0, Math.PI * 2); g.fill(); }
+  for (let k = 0; k < 4; k++) {
+    g.fillStyle = k % 2 ? 'rgba(244,144,179,.5)' : 'rgba(241,207,156,.7)';
+    if (k % 2) trazoCorazon(g, w / 2, h * (k + 0.5) / 4, 46);
+    else trazoEstrella(g, w / 2, h * (k + 0.5) / 4, 26);
+    g.fill();
+  }
+}, true);
+texAlfombra.repeat.set(1, LARGO / 3);
+
+/* ---------- Cielo, estrellas y luces ---------- */
+const cielo = new THREE.Mesh(
+  new THREE.SphereGeometry(150, 32, 16),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide, fog: false, depthWrite: false,
+    uniforms: {
+      cAlto: { value: new THREE.Color('#4a3a7c') },
+      cMedio: { value: new THREE.Color('#c896d0') },
+      cHorizonte: { value: new THREE.Color('#ffd3e1') },
+    },
+    vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform vec3 cAlto; uniform vec3 cMedio; uniform vec3 cHorizonte; varying vec3 vP;
+      void main(){ float h = vP.y; vec3 c = mix(cHorizonte, cMedio, smoothstep(0.0, 0.35, h)); c = mix(c, cAlto, smoothstep(0.3, 0.9, h));
+      gl_FragColor = vec4(c, 1.0);
+      #include <colorspace_fragment>
+      }`,
+  })
+);
+cielo.renderOrder = -1;
+scene.add(cielo);
+
+const U = { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() } };
+const VERT_LUCES = `uniform float uTime; uniform float uPR; uniform float uDeriva; uniform float uEscala; uniform float uLejos;
+attribute vec3 aColor; attribute float aSize; attribute float aSeed;
+varying vec3 vColor; varying float vAlfa;
+void main() {
+  vec3 p = position;
+  float t = uTime * 0.3 + aSeed * 6.2831;
+  p += uDeriva * vec3(sin(t * 1.3 + aSeed * 4.0) * 0.4, sin(t * 0.9 + aSeed * 9.0) * 0.3, cos(t * 1.1 + aSeed * 2.0) * 0.4);
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  float d = -mv.z;
+  float titila = 0.55 + 0.45 * sin(uTime * (0.8 + aSeed * 1.6) + aSeed * 40.0);
+  vAlfa = titila * smoothstep(0.25, 1.0, d) * (1.0 - smoothstep(uLejos * 0.55, uLejos, d));
+  vColor = aColor;
+  gl_PointSize = min(aSize * uPR * uEscala / max(d, 0.3), 90.0 * uPR);
+  gl_Position = projectionMatrix * mv;
+}`;
+const FRAG_LUCES = `varying vec3 vColor; varying float vAlfa;
+void main() {
+  float r = length(gl_PointCoord - 0.5) * 2.0;
+  float nucleo = smoothstep(0.32, 0.0, r);
+  float halo = pow(max(1.0 - r, 0.0), 2.4);
+  float a = (nucleo * 0.85 + halo * 0.5) * vAlfa;
+  if (a < 0.004) discard;
+  gl_FragColor = vec4(vColor * (0.7 + nucleo * 0.6), a);
+  #include <colorspace_fragment>
+}`;
+function nubeLuces(puntos, { deriva = 0, escala = 45, lejos = 80 } = {}) {
+  const n = puntos.length;
+  const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), tam = new Float32Array(n), sem = new Float32Array(n);
+  const c = new THREE.Color();
+  puntos.forEach((q, k) => {
+    pos.set(q.p, k * 3);
+    c.set(q.c);
+    col.set([c.r, c.g, c.b], k * 3);
+    tam[k] = q.t;
+    sem[k] = Math.random();
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+  geo.setAttribute('aSize', new THREE.BufferAttribute(tam, 1));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(sem, 1));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uTime: U.uTime, uPR: U.uPR, uDeriva: { value: deriva }, uEscala: { value: escala }, uLejos: { value: lejos } },
+    vertexShader: VERT_LUCES, fragmentShader: FRAG_LUCES,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const puntosMesh = new THREE.Points(geo, mat);
+  puntosMesh.frustumCulled = false;
+  return puntosMesh;
+}
+
+const estrellas = [];
+for (let k = 0; k < 450; k++) {
+  const a = Math.random() * Math.PI * 2, y = azar(0.22, 0.98), r = Math.sqrt(1 - y * y);
+  estrellas.push({ p: [Math.cos(a) * r * 140, y * 140, Math.sin(a) * r * 140], c: elegir(['#ffffff', '#ffe6f0', '#fff1d6']), t: azar(5, 11) });
+}
+cielo.add(nubeLuces(estrellas, { lejos: 1000 }));
+
+// Polvo de estrellas flotando por el pasillo
+const polvo = [];
+for (let k = 0; k < 280; k++) {
+  const arriba = Math.random() < 0.2;
+  polvo.push({
+    p: [azar(-2.6, 2.6), arriba ? azar(3.8, 6.5) : azar(0.3, 3.6), azar(Z_FONDO + 1, Z_ATRAS - 1)],
+    c: elegir(['#fff1c9', '#ffd1e0', '#ffffff', '#ffc2d6', '#f1dcff']),
+    t: azar(0.6, 1.6),
+  });
+}
+scene.add(nubeLuces(polvo, { deriva: 1, lejos: 42 }));
+
+/* ---------- Pasillo ---------- */
+const matPared = new THREE.MeshLambertMaterial({ map: texPared });
+const texPared2 = texPared.clone();
+texPared.repeat.set(LARGO / SEP, 1);
+texPared2.repeat.set(LARGO / SEP, 1);
+texPared2.offset.x = -1 / 6;
+const matPared2 = new THREE.MeshLambertMaterial({ map: texPared2 });
+const geoPared = new THREE.PlaneGeometry(LARGO, ALTO);
+const paredIzq = new THREE.Mesh(geoPared, matPared);
+paredIzq.rotation.y = Math.PI / 2;
+paredIzq.position.set(-ANCHO, ALTO / 2, Z_MEDIO);
+const paredDer = new THREE.Mesh(geoPared, matPared2);
+paredDer.rotation.y = -Math.PI / 2;
+paredDer.position.set(ANCHO, ALTO / 2, Z_MEDIO);
+scene.add(paredIzq, paredDer);
+
+const texTestero = texPared.clone();
+texTestero.repeat.set(1, 1);
+const matTestero = new THREE.MeshLambertMaterial({ map: texTestero });
+const fondo = new THREE.Mesh(new THREE.PlaneGeometry(ANCHO * 2, ALTO), matTestero);
+fondo.position.set(0, ALTO / 2, Z_FONDO);
+const atras = new THREE.Mesh(new THREE.PlaneGeometry(ANCHO * 2, ALTO), matTestero);
+atras.rotation.y = Math.PI;
+atras.position.set(0, ALTO / 2, Z_ATRAS);
+scene.add(fondo, atras);
+
+const matPiedra = new THREE.MeshLambertMaterial({ color: '#fff0f4' });
+const remate = new THREE.BoxGeometry(0.4, 0.12, LARGO);
+[-1, 1].forEach(s => {
+  const m = new THREE.Mesh(remate, matPiedra);
+  m.position.set(s * (ANCHO + 0.08), ALTO + 0.06, Z_MEDIO);
+  scene.add(m);
+});
+
+const suelo = new THREE.Mesh(new THREE.PlaneGeometry(ANCHO * 2, LARGO), new THREE.MeshLambertMaterial({ map: texSuelo }));
+suelo.rotation.x = -Math.PI / 2;
+suelo.position.set(0, 0, Z_MEDIO);
+const alfombra = new THREE.Mesh(new THREE.PlaneGeometry(1.7, LARGO), new THREE.MeshLambertMaterial({ map: texAlfombra }));
+alfombra.rotation.x = -Math.PI / 2;
+alfombra.position.set(0, 0.004, Z_MEDIO);
+scene.add(suelo, alfombra);
+
+// Arcos con luces entre foto y foto
+const R_ARCO = ANCHO - 0.17;
+const zArcos = [];
+for (let k = 0; k <= N; k++) zArcos.push(1 - k * SEP);
+zArcos.push(Z_FONDO + 0.5);
+const geoPilar = new THREE.BoxGeometry(0.34, ALTO, 0.42);
+const geoCapitel = new THREE.BoxGeometry(0.48, 0.14, 0.54);
+const geoArco = new THREE.TorusGeometry(R_ARCO, 0.1, 10, 72, Math.PI);
+const bombillos = [];
+const cables = [];
+zArcos.forEach(z => {
+  [-1, 1].forEach(s => {
+    const pilar = new THREE.Mesh(geoPilar, matPiedra);
+    pilar.position.set(s * R_ARCO, ALTO / 2, z);
+    const capitel = new THREE.Mesh(geoCapitel, matPiedra);
+    capitel.position.set(s * R_ARCO, ALTO, z);
+    scene.add(pilar, capitel);
+  });
+  const arco = new THREE.Mesh(geoArco, matPiedra);
+  arco.position.set(0, ALTO, z);
+  scene.add(arco);
+  for (let k = 0; k <= 28; k++) {
+    const a = (k / 28) * Math.PI;
+    bombillos.push({ p: [Math.cos(a) * R_ARCO, ALTO + Math.sin(a) * R_ARCO, z + 0.13], c: k % 2 ? '#fff0c8' : '#ffc8da', t: azar(1.6, 2.2) });
+  }
+});
+for (let k = 0; k < N; k++) {
+  const z1 = zArcos[k], z2 = zArcos[k + 1];
+  [[-1, 1], [1, -1]].forEach(([sa, sb]) => {
+    let previo = null;
+    for (let j = 0; j <= 24; j++) {
+      const u = j / 24;
+      const p = [lerp(sa, sb, u) * (R_ARCO - 0.05), ALTO - 0.05 - 0.75 * 4 * u * (1 - u), lerp(z1, z2, u)];
+      if (previo) cables.push(...previo, ...p);
+      previo = p;
+      if (j % 2 === 1 && j < 24) bombillos.push({ p: [p[0], p[1] - 0.04, p[2]], c: j % 4 === 1 ? '#fff4d6' : '#ffd0e0', t: azar(1.3, 1.8) });
+    }
+  });
+}
+scene.add(nubeLuces(bombillos, { lejos: 70 }));
+const geoCables = new THREE.BufferGeometry();
+geoCables.setAttribute('position', new THREE.Float32BufferAttribute(cables, 3));
+scene.add(new THREE.LineSegments(geoCables, new THREE.LineBasicMaterial({ color: '#b07a9c', transparent: true, opacity: 0.45 })));
+
+// Montoncitos de flores al pie de cada pilar
+{
+  const montones = [];
+  zArcos.forEach(z => [-1, 1].forEach(s => montones.push([s * (ANCHO - 0.42), z])));
+  const POR = 48;
+  const flores = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.07, 0), new THREE.MeshLambertMaterial({ flatShading: true }), montones.length * POR);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), c = new THREE.Color();
+  let k = 0;
+  for (const [x, z] of montones) {
+    for (let j = 0; j < POR; j++) {
+      const r = Math.sqrt(Math.random()) * 0.55, a = Math.random() * Math.PI * 2;
+      const alto = 1 - r / 0.55;
+      const hoja = Math.random() < 0.28;
+      const esc = hoja ? azar(0.7, 1.1) : azar(0.8, 1.5);
+      v.set(x + Math.cos(a) * r * 0.75, 0.05 + alto * azar(0.15, 0.55), z + Math.sin(a) * r);
+      sc.set(esc, esc * (hoja ? 0.6 : 1), esc);
+      q.setFromEuler(e.set(Math.random() * 3, Math.random() * 3, Math.random() * 3));
+      flores.setMatrixAt(k, m4.compose(v, q, sc));
+      flores.setColorAt(k, c.set(hoja ? elegir(['#b5d3ae', '#a3c49e', '#c7ddbd']) : elegir(['#ffc4d8', '#ffffff', '#f7a8c4', '#ffe0ea', '#ffd9c7'])));
+      k++;
+    }
+  }
+  scene.add(flores);
+
+  const geoPetalo = new THREE.CircleGeometry(0.035, 7);
+  geoPetalo.scale(1.7, 1, 1);
+  geoPetalo.rotateX(-Math.PI / 2);
+  const petalos = new THREE.InstancedMesh(geoPetalo, new THREE.MeshLambertMaterial({ side: THREE.DoubleSide }), 380);
+  for (let j = 0; j < 380; j++) {
+    v.set(azar(-2.7, 2.7), 0.008 + Math.random() * 0.002, azar(Z_FONDO + 1, Z_ATRAS - 1));
+    q.setFromEuler(e.set(0, Math.random() * Math.PI * 2, 0));
+    sc.setScalar(azar(0.8, 1.3));
+    petalos.setMatrixAt(j, m4.compose(v, q, sc));
+    petalos.setColorAt(j, c.set(elegir(['#ffc9d9', '#ffffff', '#ffd9c7', '#f4b3c9'])));
+  }
+  scene.add(petalos);
+}
+
+// Globos que flotan junto a los arcos
+const globos = [];
+{
+  const geoGlobo = new THREE.SphereGeometry(0.2, 28, 18);
+  geoGlobo.scale(1, 1.2, 1);
+  const geoNudo = new THREE.ConeGeometry(0.035, 0.06, 10);
+  const colores = ['#f7a1c0', '#ffd3e1', '#fff6f9', '#e8c9f6', '#ffc9b3', '#f4b6cf'];
+  const mats = colores.map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.28, metalness: 0, emissive: c, emissiveIntensity: 0.12 }));
+  const matHilo = new THREE.LineBasicMaterial({ color: '#d9a7bf', transparent: true, opacity: 0.8 });
+  function racimo(x, y, z, cuantos = 3) {
+    for (let k = 0; k < cuantos; k++) {
+      const g = new THREE.Group();
+      const globo = new THREE.Mesh(geoGlobo, elegir(mats));
+      const nudo = new THREE.Mesh(geoNudo, globo.material);
+      nudo.position.y = -0.26;
+      const largo = azar(0.7, 1.1);
+      const puntos = [];
+      for (let j = 0; j <= 10; j++) puntos.push(new THREE.Vector3(Math.sin(j * 0.9) * 0.02, -0.28 - (j / 10) * largo, 0));
+      const hilo = new THREE.Line(new THREE.BufferGeometry().setFromPoints(puntos), matHilo);
+      g.add(globo, nudo, hilo);
+      const base = new THREE.Vector3(x + azar(-0.18, 0.18), y + k * 0.22 + azar(-0.05, 0.1), z + azar(-0.25, 0.25));
+      g.position.copy(base);
+      scene.add(g);
+      globos.push({ g, base, fase: Math.random() * 6.28, frec: azar(0.6, 1) });
+    }
+  }
+  zArcos.slice(0, N + 1).forEach(z => [-1, 1].forEach(s => racimo(s * (R_ARCO - 0.4), 2.65, z + 0.5)));
+  [-1, 1].forEach(s => racimo(s * (ANCHO - 0.7), 2.2, Z_LUNA + 1.4, 4));
+}
+
+// Banderines con el nombre de Isa en la entrada
+const banderines = [];
+document.fonts.load('600 150px Fredoka').catch(() => {}).finally(() => {
+  const banderas = ['estrella', 'corazon', 'I', 'S', 'A', 'corazon', 'estrella'];
+  const colores = ['#f7a1c0', '#fff3f7', '#f9c3d6', '#ecd2f7'];
+  const z = zArcos[0] + 0.25;
+  const curva = u => [lerp(-1, 1, u) * (R_ARCO - 0.15), ALTO - 0.4 - 0.5 * 4 * u * (1 - u), z];
+  const cuerda = [];
+  for (let j = 0; j <= 30; j++) cuerda.push(new THREE.Vector3(...curva(j / 30)));
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(cuerda), new THREE.LineBasicMaterial({ color: '#c98aa8' })));
+  const geoBandera = new THREE.PlaneGeometry(0.5, 0.62);
+  geoBandera.translate(0, -0.31, 0);
+  banderas.forEach((b, k) => {
+    const fondo = colores[k % colores.length];
+    const tex = texturaCanvas(256, 320, (g, w, h) => {
+      g.fillStyle = fondo;
+      g.beginPath(); g.moveTo(4, 4); g.lineTo(w - 4, 4); g.lineTo(w / 2, h - 6); g.closePath(); g.fill();
+      g.setLineDash([10, 8]);
+      g.strokeStyle = 'rgba(255,255,255,.85)';
+      g.lineWidth = 4;
+      g.beginPath(); g.moveTo(22, 18); g.lineTo(w - 22, 18); g.lineTo(w / 2, h - 34); g.closePath(); g.stroke();
+      g.setLineDash([]);
+      const tinta = fondo === '#fff3f7' ? '#e2789c' : '#ffffff';
+      g.fillStyle = tinta;
+      if (b === 'corazon') { trazoCorazon(g, w / 2, 112, 96); g.fill(); }
+      else if (b === 'estrella') { trazoEstrella(g, w / 2, 106, 44); g.fill(); }
+      else {
+        g.font = '600 140px Fredoka, Quicksand, sans-serif';
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillStyle = fondo === '#fff3f7' ? '#c2477a' : '#ffffff';
+        g.fillText(b, w / 2, 110);
+      }
+    });
+    const m = new THREE.Mesh(geoBandera, new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
+    const u = (k + 0.5) / banderas.length;
+    m.position.set(...curva(u));
+    m.position.y -= 0.02;
+    m.rotation.z = (u - 0.5) * 0.35;
+    m.userData.fase = k * 0.7;
+    scene.add(m);
+    banderines.push(m);
+  });
+});
+
+// Final del pasillo: ventana de luz y una luna creciente
+const texVentana = texturaCanvas(256, 256, (g, w) => {
+  const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  r.addColorStop(0, '#ffd9e6');
+  r.addColorStop(0.55, '#f7b5cd');
+  r.addColorStop(0.92, '#e98fb3');
+  r.addColorStop(1, 'rgba(245,176,202,0)');
+  g.fillStyle = r;
+  g.fillRect(0, 0, w, w);
+});
+const ventana = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ map: texVentana, transparent: true }));
+ventana.position.set(0, OJO + 0.4, Z_FONDO + 0.02);
+scene.add(ventana);
+
+const formaLuna = (() => {
+  const pts = [];
+  for (let k = 0; k <= 48; k++) { const t = -Math.PI / 2 + (k / 48) * Math.PI; pts.push(new THREE.Vector2(-Math.cos(t), Math.sin(t))); }
+  for (let k = 47; k >= 1; k--) { const t = -Math.PI / 2 + (k / 48) * Math.PI; pts.push(new THREE.Vector2(-0.42 * Math.cos(t), Math.sin(t))); }
+  return new THREE.Shape(pts);
+})();
+const geoLuna = new THREE.ExtrudeGeometry(formaLuna, { depth: 0.22, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.06, bevelSegments: 6, curveSegments: 24 });
+geoLuna.center();
+const luna = new THREE.Mesh(geoLuna, new THREE.MeshStandardMaterial({ color: '#ffcf73', emissive: '#f5a24e', emissiveIntensity: 0.38, roughness: 0.35, metalness: 0.1 }));
+luna.position.set(0, OJO + 0.3, Z_LUNA);
+luna.rotation.z = -0.45;
+scene.add(luna);
+
+const formaEstrella = new THREE.Shape();
+for (let k = 0; k < 10; k++) {
+  const r = k % 2 ? 0.1 : 0.22, a = Math.PI / 2 + k * Math.PI / 5;
+  if (k === 0) formaEstrella.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+  else formaEstrella.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+}
+formaEstrella.closePath();
+const geoEstrella = new THREE.ExtrudeGeometry(formaEstrella, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.025, bevelSegments: 3 });
+geoEstrella.center();
+const estrellasLuna = [];
+[['#ffd9e6', 1], ['#fff1c7', 0.8], ['#f6c2ff', 0.7], ['#ffe2b8', 0.9], ['#ffc3d6', 0.65]].forEach(([color, esc], k) => {
+  const m = new THREE.Mesh(geoEstrella, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, roughness: 0.4 }));
+  m.scale.setScalar(esc);
+  scene.add(m);
+  estrellasLuna.push({ m, a: (k / 5) * Math.PI * 2, r: azar(1.5, 1.9), y: azar(-0.6, 0.8), v: azar(0.18, 0.3) });
+});
+
+const brilloLuna = new THREE.Sprite(new THREE.SpriteMaterial({ map: texBrillo, color: '#ffb36b', blending: THREE.AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.5 }));
+brilloLuna.scale.set(4.8, 4.8, 1);
+const brilloLejano = new THREE.Sprite(new THREE.SpriteMaterial({ map: texBrillo, color: '#ffc9a8', blending: THREE.AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.18 }));
+brilloLejano.scale.set(11, 11, 1);
+brilloLuna.position.copy(luna.position).add(new THREE.Vector3(0, 0, -0.4));
+brilloLejano.position.copy(brilloLuna.position);
+scene.add(brilloLejano, brilloLuna);
+const luzLuna = new THREE.PointLight('#ffc2d6', 16, 14, 1.6);
+luzLuna.position.set(0, OJO + 0.9, Z_LUNA + 1.6);
+scene.add(luzLuna);
+
+const geoCharco = new THREE.PlaneGeometry(2.4, 3);
+const matCharco = new THREE.MeshBasicMaterial({ map: texBrillo, color: '#ffd5c0', transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending, depthWrite: false });
+function charco(x, z, color) {
+  const m = new THREE.Mesh(geoCharco, color ? matCharco.clone() : matCharco);
+  if (color) m.material.color.set(color);
+  m.rotation.x = -Math.PI / 2;
+  m.position.set(x, 0.012, z);
+  scene.add(m);
+}
+charco(0, Z_LUNA + 0.6, '#ffadc8');
+
+/* ---------- Cuadros ---------- */
+const marcos = FOTOS.map(() => ({ w: 1.6, h: 2.15 }));
+const matMarco = new THREE.MeshLambertMaterial({ color: '#fff4ee', emissive: '#4a2b3a', emissiveIntensity: 0.12 });
+const matPaspartu = new THREE.MeshBasicMaterial({ color: '#fff9fb' });
+const FRENTE = 0.08;   // grosor total del cuadro sobre la pared
+
+function construirCuadro(i, tex) {
+  const a = tex.image.width / tex.image.height;
+  const w = a >= 1 ? 2.1 : 1.9 * a;
+  const h = a >= 1 ? 2.1 / a : 1.9;
+  const P = 0.11, M = 0.085, D = 0.07;
+  const W = w + 2 * (P + M), H = h + 2 * (P + M);
+  const s = lado(i);
+  const g = new THREE.Group();
+  g.position.set(s * ANCHO, OJO, zFoto(i));
+  g.rotation.y = -s * Math.PI / 2;
+
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(W + 2.2, H + 1.8), new THREE.MeshBasicMaterial({ map: texBrillo, color: '#ffdccf', transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false }));
+  halo.position.z = 0.004;
+  const moldura = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), matMarco);
+  moldura.position.z = D / 2 + 0.005;
+  const paspartu = new THREE.Mesh(new THREE.PlaneGeometry(w + 2 * P, h + 2 * P), matPaspartu);
+  paspartu.position.z = D + 0.007;
+  const foto = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex }));
+  foto.position.z = D + 0.009;
+  const lampara = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.035, 0.05), matMarco);
+  lampara.position.set(0, H / 2 + 0.16, 0.16);
+  const brazo = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.16), matMarco);
+  brazo.position.set(0, H / 2 + 0.16, 0.08);
+  const destello = new THREE.Sprite(new THREE.SpriteMaterial({ map: texBrillo, color: '#ffe9d0', transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+  destello.position.set(0, H / 2 + 0.12, 0.18);
+  destello.scale.set(0.9, 0.35, 1);
+  // Moño rosado sobre el marco
+  const mono = new THREE.Group();
+  const matMono = new THREE.MeshStandardMaterial({ color: '#f490b3', roughness: 0.45, emissive: '#f490b3', emissiveIntensity: 0.15 });
+  const geoLazo = new THREE.SphereGeometry(0.11, 16, 12);
+  geoLazo.scale(1.4, 0.8, 0.45);
+  [-1, 1].forEach(l => { const lazo = new THREE.Mesh(geoLazo, matMono); lazo.position.x = l * 0.13; lazo.rotation.z = l * 0.25; mono.add(lazo); });
+  const centro = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), matMono);
+  mono.add(centro);
+  mono.position.set(-W / 2 + 0.05, H / 2 - 0.05, D + 0.04);
+  mono.rotation.z = 0.6;
+  g.add(halo, moldura, paspartu, foto, lampara, brazo, destello, mono);
+  scene.add(g);
+  charco(s * (ANCHO - 0.9), zFoto(i));
+  marcos[i] = { w: W, h: H };
+}
+
+const gestor = new THREE.LoadingManager();
+const cargador = new THREE.TextureLoader(gestor);
+FOTOS.forEach((src, i) => cargador.load(src, tex => {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = ANISO;
+  construirCuadro(i, tex);
+}));
+gestor.onLoad = () => {
+  renderer.compile(scene, camera);
+  if (!viaje) Object.assign(actual, pose(paso));
+  $('comenzar').disabled = false;
+  $('comenzar-texto').textContent = 'Comenzar';
+};
+
+/* ---------- Corazones y estrellas que flotan ---------- */
+const particulas = [];
+for (let k = 0; k < 96; k++) {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: texParticulas[k % texParticulas.length], transparent: true, depthWrite: false, opacity: 0 }));
+  sp.visible = false;
+  scene.add(sp);
+  particulas.push({ sp, vivo: false, edad: 0, vida: 1, base: 0.2, pos: new THREE.Vector3(), v: new THREE.Vector3(), lat: new THREE.Vector3(), fase: 0, frec: 1, amp: 0, arrastre: 0, flote: 0 });
+}
+function soltarParticula(pos, v, lat, { base = azar(0.1, 0.24), vida = azar(2.8, 4.4), arrastre = 0, flote = 0 } = {}) {
+  const c = particulas.find(x => !x.vivo);
+  if (!c) return;
+  Object.assign(c, { vivo: true, edad: 0, vida, base, arrastre, flote, fase: Math.random() * 6.28, frec: azar(1, 1.8), amp: azar(0.05, 0.14) });
+  c.pos.copy(pos);
+  c.v.copy(v);
+  c.lat.copy(lat);
+  c.sp.visible = true;
+}
+const EJE_Z = new THREE.Vector3(0, 0, 1);
+function particulaEnFoto(i, fuerte) {
+  const m = marcos[i], s = lado(i);
+  const n = new THREE.Vector3(-s, 0, 0);
+  const lateral = Math.random() < 0.5 ? -1 : 1;
+  const p = new THREE.Vector3(s * (ANCHO - FRENTE), OJO + azar(-m.h / 2 - 0.2, m.h / 4), zFoto(i))
+    .addScaledVector(EJE_Z, lateral * (m.w / 2 + azar(0.08, 1.3)))
+    .addScaledVector(n, azar(0.1, 0.9));
+  const v = new THREE.Vector3(0, azar(0.2, 0.4) * (fuerte ? 1.6 : 1), 0)
+    .addScaledVector(EJE_Z, lateral * azar(0.01, fuerte ? 0.22 : 0.06))
+    .addScaledVector(n, azar(0.01, 0.06));
+  soltarParticula(p, v, EJE_Z, fuerte ? { arrastre: 0.5, flote: 0.15 } : {});
+}
+function rafagaFinal() {
+  for (let k = 0; k < 50; k++) {
+    const dir = new THREE.Vector3(azar(-1, 1), azar(-0.4, 1), azar(-0.2, 1)).normalize();
+    soltarParticula(luna.position.clone().addScaledVector(dir, 0.4), dir.multiplyScalar(azar(0.8, 1.8)), new THREE.Vector3(1, 0, 0),
+      { base: azar(0.1, 0.22), vida: azar(2.6, 4), arrastre: 1.1, flote: 0.25 });
+  }
+}
+function actualizarParticulas(dt) {
+  for (const c of particulas) {
+    if (!c.vivo) continue;
+    c.edad += dt;
+    if (c.edad >= c.vida) { c.vivo = false; c.sp.visible = false; continue; }
+    c.v.multiplyScalar(Math.max(0, 1 - c.arrastre * dt));
+    c.v.y += c.flote * dt;
+    c.pos.addScaledVector(c.v, dt);
+    c.sp.position.copy(c.pos).addScaledVector(c.lat, Math.sin(c.edad * c.frec + c.fase) * c.amp);
+    const kIn = Math.min(c.edad / 0.5, 1);
+    const esc = c.base * salidaRebote(kIn) * (1 + 0.06 * Math.sin(c.edad * 5 + c.fase));
+    c.sp.scale.set(esc, esc, 1);
+    c.sp.material.opacity = Math.min(c.edad / 0.35, 1) * (1 - suave(c.vida * 0.6, c.vida, c.edad));
+    c.sp.material.rotation = Math.sin(c.edad * 1.3 + c.fase) * 0.3;
+  }
+}
+
+/* ---------- Recorrido ---------- */
+let paso = -1;          // -1 entrada, 0..N-1 fotos, N final
+let viaje = null;
+let enReposo = false;
+let tReposo = 0;
+let iniciado = false;
+let acumulado = 0;
+let tFinal = -10;
+let temporizadorNota = 0;
+let temporizadorPista = 0;
+const actual = { x: 0, z: Z_INICIO, yaw: 0 };
+const reloj = new THREE.Clock();
+
+// Cuánto espacio deja la nota a la foto: en vertical la foto va arriba y la nota abajo; en horizontal, foto a la izquierda y nota a la derecha
+let encuadre = { ox: 0, oy: 0, fw: 0.62, fh: 0.7 };
+const desplazado = { x: 0, y: 0 };
+
+function pose(p) {
+  if (p < 0) return { x: 0, z: Z_INICIO, yaw: 0 };
+  if (p >= N) return { x: 0, z: Z_LUNA + (camera.aspect < 1 ? 6.4 : 4.6), yaw: 0 };
+  const m = marcos[p], s = lado(p);
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  let d = Math.max(m.h / (encuadre.fh * 2 * t), m.w / (encuadre.fw * 2 * t * camera.aspect));
+  d = Math.min(d, 2 * ANCHO - FRENTE - 0.45);
+  return { x: s * (ANCHO - FRENTE - d), z: zFoto(p), yaw: -s * Math.PI / 2 };
+}
+const cerca = (ang, ref) => ang + Math.round((ref - ang) / (Math.PI * 2)) * Math.PI * 2;
+
+function mostrarNota(i) {
+  $('nota-etq').textContent = `${i + 1} de ${N}`;
+  $('nota-titulo').textContent = NOTAS[i].titulo;
+  $('nota-texto').textContent = NOTAS[i].texto;
+  $('nota-pista').textContent = i === N - 1 ? 'Toca para llegar al final' : 'Toca para seguir';
+  $('nota').classList.add('visible');
+  temporizadorPista = setTimeout(() => $('nota').classList.add('con-pista'), 2600);
+}
+function ocultarNota() {
+  clearTimeout(temporizadorNota);
+  clearTimeout(temporizadorPista);
+  $('nota').classList.remove('visible', 'con-pista');
+}
+
+function irA(nuevo) {
+  if (viaje || nuevo < 0 || nuevo > N || nuevo === paso) return;
+  const de = { ...actual };
+  const a = pose(nuevo);
+  const dx = a.x - de.x, dz = a.z - de.z;
+  const medio = cerca(Math.atan2(-dx, -dz), de.yaw);
+  a.yaw = cerca(a.yaw, medio);
+  const dist = Math.hypot(dx, dz);
+  const dur = reducido ? 1.1 : 1.6 + dist * 0.2 + (nuevo === N ? 0.8 : 0);
+  viaje = { de, a, medio, t0: reloj.elapsedTime, dur, destino: nuevo };
+  enReposo = false;
+  ocultarNota();
+  if (nuevo === N) $('hud').classList.add('oculta');
+  actualizarHud(nuevo);
+}
+
+function llegar() {
+  enReposo = true;
+  tReposo = reloj.elapsedTime;
+  acumulado = 0;
+  actualizarHud(paso);
+  if (paso >= 0 && paso < N) {
+    if (!reducido) for (let k = 0; k < 16; k++) particulaEnFoto(paso, true);
+    const p = paso;
+    temporizadorNota = setTimeout(() => { if (enReposo && paso === p) mostrarNota(p); }, 250);
+  }
+  if (paso === N) {
+    tFinal = reloj.elapsedTime;
+    rafagaFinal();
+    setTimeout(abrirCarta, 1100);
+  }
+}
+
+function actualizarCamara(t, dt) {
+  let paseo = 0;
+  if (viaje) {
+    const k = Math.min((t - viaje.t0) / viaje.dur, 1);
+    const e = entradaSalida(k);
+    const { de, a, medio } = viaje;
+    actual.x = lerp(de.x, a.x, e);
+    actual.z = lerp(de.z, a.z, e);
+    actual.yaw = k < 0.42 ? lerp(de.yaw, medio, entradaSalida(k / 0.42))
+      : k > 0.58 ? lerp(medio, a.yaw, entradaSalida((k - 0.58) / 0.42)) : medio;
+    paseo = Math.sin(e * Math.PI * 7) * 0.022 * Math.sin(k * Math.PI);
+    if (k >= 1) {
+      actual.yaw = Math.atan2(Math.sin(actual.yaw), Math.cos(actual.yaw));
+      paso = viaje.destino;
+      viaje = null;
+      llegar();
+    }
+  }
+  const r = reducido ? 0 : 1;
+  camera.position.set(
+    actual.x + Math.sin(t * 0.37) * 0.03 * r,
+    OJO + paseo * r + Math.sin(t * 0.53) * 0.015 * r,
+    actual.z + Math.cos(t * 0.29) * 0.03 * r
+  );
+  camera.rotation.set(Math.sin(t * 0.41) * 0.006 * r, actual.yaw + Math.sin(t * 0.23) * 0.01 * r, 0);
+
+  // La foto se corre para dejarle espacio a la nota solo cuando se va hacia una foto o se está frente a ella
+  const destino = viaje ? viaje.destino : paso;
+  const enFoto = destino >= 0 && destino < N;
+  const k = Math.min(1, dt * 2.2);
+  desplazado.x += ((enFoto ? encuadre.ox : 0) - desplazado.x) * k;
+  desplazado.y += ((enFoto ? encuadre.oy : 0) - desplazado.y) * k;
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.setViewOffset(w, h, desplazado.x * w, desplazado.y * h, w, h);
+}
+
+/* ---------- Interfaz ---------- */
+const PATH_ESTRELLA = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z';
+$('puntos').innerHTML = FOTOS.map(() => `<svg viewBox="0 0 24 24"><path d="${PATH_ESTRELLA}"/></svg>`).join('');
+const puntos = [...$('puntos').children];
+
+function actualizarHud(p) {
+  puntos.forEach((el, k) => {
+    el.classList.toggle('visto', k < p);
+    el.classList.toggle('activo', k === p);
+  });
+  $('atras').disabled = !!viaje || p <= 0 || p >= N;
+}
+
+const siguiente = () => { if (iniciado && enReposo && paso < N) irA(paso + 1); };
+const anterior = () => { if (iniciado && enReposo && paso > 0 && paso < N) irA(paso - 1); };
+
+let toque = null;
+const bloqueado = e => e.target.closest && e.target.closest('button, #inicio, #carta-capa');
+addEventListener('pointerdown', e => { toque = bloqueado(e) ? null : { x: e.clientX, y: e.clientY }; });
+addEventListener('pointerup', e => {
+  if (!toque) return;
+  const dx = e.clientX - toque.x, dy = e.clientY - toque.y;
+  toque = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) (dx < 0 ? siguiente : anterior)();
+  else if (Math.hypot(dx, dy) < 18) siguiente();
+});
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('button')) return;
+  if (['ArrowRight', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); siguiente(); }
+  if (e.key === 'ArrowLeft') anterior();
+});
+$('atras').addEventListener('click', anterior);
+
+// Música: cancion.mp3 (Ojos color sol) ya empieza en el segundo 25 de la original; al terminar vuelve a empezar sola
+let musica = new Audio('cancion.mp3');
+let musicaSonando = false;
+musica.loop = true;
+musica.preload = 'auto';
+musica.addEventListener('error', () => {
+  musica = null;
+  $('volumen').hidden = true;
+  $('sonido').hidden = true;
+});
+
+function sonar() {
+  if (!musica) return;
+  musica.volume = 0;
+  musica.play().then(() => {
+    musicaSonando = true;
+    $('sonido').hidden = false;
+    const t0 = performance.now();
+    const subir = () => {
+      const k = Math.min((performance.now() - t0) / 3000, 1);
+      musica.volume = 0.85 * k;
+      if (k < 1) requestAnimationFrame(subir);
+    };
+    subir();
+  }).catch(() => {});
+}
+$('sonido').addEventListener('click', () => {
+  if (!musica) return;
+  if (musica.paused) { musica.play().catch(() => {}); musicaSonando = true; } else { musica.pause(); musicaSonando = false; }
+  $('sonido').classList.toggle('silencio', !musicaSonando);
+  $('sonido').setAttribute('aria-label', musicaSonando ? 'Pausar música' : 'Activar música');
+});
+document.addEventListener('visibilitychange', () => {
+  if (!musica) return;
+  if (document.hidden) musica.pause();
+  else if (musicaSonando) musica.play().catch(() => {});
+});
+
+$('comenzar').addEventListener('click', () => {
+  if (iniciado) return;
+  iniciado = true;
+  $('comenzar').blur();
+  sonar();
+  const raiz = document.documentElement;
+  if (raiz.requestFullscreen && matchMedia('(pointer: coarse)').matches) {
+    raiz.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+  }
+  navigator.wakeLock?.request('screen').catch(() => {});
+  $('inicio').classList.add('oculta');
+  $('hud').classList.remove('oculta');
+  enReposo = true;
+  setTimeout(() => irA(0), 700);
+});
+
+const capaCarta = $('carta-capa');
+const tiempos = [];
+function abrirCarta() {
+  $('carta-scroll').scrollTop = 0;
+  capaCarta.classList.remove('oculta');
+  tiempos.push(
+    setTimeout(() => capaCarta.classList.add('f1'), 60),
+    setTimeout(() => capaCarta.classList.add('f2'), 950),
+    setTimeout(() => capaCarta.classList.add('f3'), 1650),
+    setTimeout(() => {
+      capaCarta.classList.add('f4');
+      [...$('carta-scroll').children].forEach((el, k) => tiempos.push(setTimeout(() => el.classList.add('visible'), 500 + k * 650)));
+    }, 2550)
+  );
+}
+
+$('otra-vez').addEventListener('click', () => {
+  $('velo').classList.add('activo');
+  setTimeout(() => {
+    tiempos.splice(0).forEach(clearTimeout);
+    capaCarta.classList.add('oculta');
+    capaCarta.classList.remove('f1', 'f2', 'f3', 'f4');
+    [...$('carta-scroll').children].forEach(el => el.classList.remove('visible'));
+    viaje = null;
+    paso = -1;
+    Object.assign(actual, pose(-1));
+    enReposo = true;
+    actualizarHud(-1);
+    $('hud').classList.remove('oculta');
+    $('velo').classList.remove('activo');
+    setTimeout(() => irA(0), 900);
+  }, 750);
+});
+
+/* ---------- Tamaño y bucle ---------- */
+function ajustar() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  const vertical = camera.aspect < 1;
+  camera.fov = vertical ? 72 : 52;
+  encuadre = vertical ? { ox: 0, oy: 0.19, fw: 0.86, fh: 0.44 } : { ox: 0.19, oy: 0, fw: 0.5, fh: 0.74 };
+  camera.updateProjectionMatrix();
+  U.uPR.value = renderer.getPixelRatio();
+  if (!viaje) Object.assign(actual, pose(paso));
+}
+addEventListener('resize', ajustar);
+ajustar();
+
+const ATRAS_LUZ = new THREE.Vector3(0, 0.5, -0.6);
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(reloj.getDelta(), 0.05);
+  const t = reloj.elapsedTime;
+  U.uTime.value = t;
+  actualizarCamara(t, dt);
+  cielo.position.copy(camera.position);
+  luzCamara.position.copy(camera.position).add(ATRAS_LUZ.clone().applyEuler(camera.rotation));
+
+  if (enReposo && paso >= 0 && paso < N && t - tReposo > 0.3 && !reducido) {
+    acumulado += dt * 2.6;
+    while (acumulado >= 1) { particulaEnFoto(paso, false); acumulado -= 1; }
+  }
+  actualizarParticulas(dt);
+
+  const r = reducido ? 0 : 1;
+  for (const b of globos) {
+    b.g.position.y = b.base.y + Math.sin(t * b.frec + b.fase) * 0.07 * r;
+    b.g.rotation.z = Math.sin(t * b.frec * 0.7 + b.fase) * 0.08 * r;
+  }
+  for (const m of banderines) m.rotation.x = Math.sin(t * 1.4 + m.userData.fase) * 0.12 * r;
+
+  const latido = 1 + 0.04 * Math.pow(Math.max(0, Math.sin(t * 2.2)), 6) + 0.25 * Math.exp(-(t - tFinal) * 3) * Math.max(0, Math.sin((t - tFinal) * 9));
+  luna.scale.setScalar(1.15 * latido);
+  luna.rotation.y = Math.sin(t * 0.5) * 0.45 * r;
+  luna.position.y = OJO + 0.3 + Math.sin(t * 1.1) * 0.08 * r;
+  for (const e of estrellasLuna) {
+    const a = e.a + t * e.v * r;
+    e.m.position.set(Math.cos(a) * e.r, luna.position.y + e.y + Math.sin(t * 1.3 + e.a) * 0.06, Z_LUNA + Math.sin(a) * 0.6);
+    e.m.rotation.y = t * 0.8 + e.a;
+  }
+  brilloLuna.material.opacity = 0.45 + 0.1 * Math.sin(t * 1.7);
+
+  renderer.render(scene, camera);
+});
+</script>
+
+</body>
+</html>
